@@ -72,7 +72,7 @@ func NewDriver(c *cli.Context) (*S3fsDriver, error) {
 
 func (d *S3fsDriver) getClient() (*minio.Client, error) {
 	// get a s3 client
-	clt, err := minio.New(d.Endpoint, d.AccessKey, d.SecretKey, d.UseSSL)
+	clt, err := minio.NewWithRegion(d.Endpoint, d.AccessKey, d.SecretKey, d.UseSSL, d.Region)
 	if err != nil {
 		log.WithField("command", "driver").Errorf("cannot get s3 client: %s", err)
 		return nil, fmt.Errorf("cannot get s3 client: %s", err)
