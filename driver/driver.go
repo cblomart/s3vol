@@ -6,7 +6,7 @@ import (
 
 	"github.com/docker/go-plugins-helpers/volume"
 	log "github.com/sirupsen/logrus"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
 //S3fsDriver is a volume driver over s3fs
@@ -19,7 +19,8 @@ type S3fsDriver struct {
 	Defaults  map[string]interface{}
 }
 
-func newDriver(c *cli.Context) (*S3fsDriver, error) {
+//NewDriver creates a new S3FS driver
+func NewDriver(c *cli.Context) (*S3fsDriver, error) {
 	endpoint := c.String("endpoint")
 	accesskey := c.String("accesskey")
 	secretkey := c.String("secretkey")
