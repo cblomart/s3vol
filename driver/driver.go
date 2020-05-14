@@ -2,7 +2,6 @@ package driver
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/docker/go-plugins-helpers/volume"
 	log "github.com/sirupsen/logrus"
@@ -26,19 +25,10 @@ func NewDriver(c *cli.Context) (*S3fsDriver, error) {
 	secretkey := c.String("secretkey")
 	region := c.String("region")
 	mount := c.String("mount")
-	defaults := make(map[string]interface{})
-	options := strings.Split(c.String("defaults"), ",")
-	for _, o := range options {
-		if !strings.Contains(o, "=") {
-			defaults[o] = true
-			continue
-		}
-		infos := strings.SplitN(o, "=", 1)
-		if len(infos) != 2 {
-			log.WithField("command", "driver").Errorf("could not parse default options: %s", o)
-			return nil, fmt.Errorf("could not parse default options: %s", o)
-		}
-		defaults[infos[0]] = infos[1]
+	defaults, err := parseOptions(c.String("defaults"))
+	if err != nil {
+		log.WithField("command", "driver").Errorf("could not parse options: %s", err)
+		return nil, fmt.Errorf("could not parse options: %s", err)
 	}
 	driver := &S3fsDriver{
 		Endpoint:  endpoint,
