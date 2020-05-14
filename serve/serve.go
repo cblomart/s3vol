@@ -12,6 +12,10 @@ import (
 // Serve serves the requests from docker
 func Serve(c *cli.Context) error {
 	log.WithField("command", "serve").Infof("s3vol - docker volume driver for s3fs")
+	// setting log level
+	if c.Bool("debug") {
+		log.SetLevel(log.DebugLevel)
+	}
 	volDriver, err := driver.NewDriver(c)
 	if err != nil {
 		log.WithField("command", "serve").Errorf("cannot instantiate driver: %s", err)

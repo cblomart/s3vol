@@ -19,6 +19,13 @@ func main() {
 				EnvVars: []string{"S3VOL_SOCKET"},
 				Usage:   "plugin socket",
 			},
+			&cli.BoolFlag{
+				Name:    "debug",
+				Aliases: []string{"d"},
+				Value:   false,
+				EnvVars: []string{"S3VOL_DEBUG"},
+				Usage:   "debug logging",
+			},
 		},
 		Commands: []*cli.Command{
 			{
