@@ -3,6 +3,7 @@ package driver
 import (
 	"fmt"
 	"net/url"
+	"strings"
 
 	"github.com/docker/go-plugins-helpers/volume"
 	"github.com/minio/minio-go/v6"
@@ -41,6 +42,7 @@ func NewDriver(c *cli.Context) (*S3fsDriver, error) {
 	secretkey := c.String("secretkey")
 	region := c.String("region")
 	mount := c.String("mount")
+	mount = strings.TrimLeft(mount, "/")
 	defaults, err := parseOptions(c.String("defaults"))
 	if err != nil {
 		log.WithField("command", "driver").Errorf("could not parse options: %s", err)
@@ -101,10 +103,20 @@ func (d *S3fsDriver) List() (*volume.ListResponse, error) {
 		log.WithField("command", "driver").WithField("method", "list").Errorf("cannot list s3 bucketst: %s", err)
 		return nil, fmt.Errorf("cannot list s3 buckets: %s", err)
 	}
-	for _, bucket := range buckets {
+	// prepare a list of volumes
+	vols := make([]*volume.Volume, len(buckets))
+	for i, bucket := range buckets {
 		log.WithField("command", "driver").WithField("method", "list").Debugf("available bucket: %s", bucket)
+		vols[i] = &volume.Volume{
+			Name:       bucket.Name,
+			Mountpoint: fmt.Sprintf("%s/%s", d.RootMount, bucket.Name),
+			CreatedAt:  bucket.CreationDate.UTC().Format("YYYY-MM-DDThh:mm:ss.sssZ"),
+		}
 	}
-	return nil, fmt.Errorf("not implemented")
+	// send response
+	return &volume.ListResponse{
+		Volumes: vols,
+	}, nil
 }
 
 //Get gets a volume
