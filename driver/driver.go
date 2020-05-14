@@ -2,8 +2,11 @@ package driver
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/docker/go-plugins-helpers/volume"
+	log "github.com/sirupsen/logrus"
+	"github.com/urfave/cli"
 )
 
 //S3fsDriver is a volume driver over s3fs
@@ -14,6 +17,42 @@ type S3fsDriver struct {
 	Region    string
 	RootMount string
 	Defaults  map[string]interface{}
+}
+
+func newDriver(c *cli.Context) (*S3fsDriver, error) {
+	endpoint := c.String("endpoint")
+	accesskey := c.String("accesskey")
+	secretkey := c.String("secretkey")
+	region := c.String("region")
+	mount := c.String("mount")
+	defaults := make(map[string]interface{})
+	options := strings.Split(c.String("defaults"), ",")
+	for _, o := range options {
+		if !strings.Contains(o, "=") {
+			defaults[o] = true
+			continue
+		}
+		infos := strings.SplitN(o, "=", 1)
+		if len(infos) != 2 {
+			log.WithField("command", "driver").Errorf("could not parse default options: %s", o)
+			return nil, fmt.Errorf("could not parse default options: %s", o)
+		}
+		defaults[infos[0]] = infos[1]
+	}
+	driver := &S3fsDriver{
+		Endpoint:  endpoint,
+		AccessKey: accesskey,
+		SecretKey: secretkey,
+		Region:    region,
+		RootMount: mount,
+		Defaults:  defaults,
+	}
+	log.WithField("command", "driver").Infof("endpoint: %s", endpoint)
+	log.WithField("command", "driver").Infof("accesskey: %s", accesskey)
+	log.WithField("command", "driver").Infof("region: %s", region)
+	log.WithField("command", "driver").Infof("mount: %s", mount)
+	log.WithField("command", "driver").Infof("default options: %+v", defaults)
+	return driver, nil
 }
 
 //Create creates a volume
