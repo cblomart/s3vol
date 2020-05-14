@@ -110,7 +110,7 @@ func (d *S3fsDriver) List() (*volume.ListResponse, error) {
 		vols[i] = &volume.Volume{
 			Name:       bucket.Name,
 			Mountpoint: fmt.Sprintf("%s/%s", d.RootMount, bucket.Name),
-			CreatedAt:  bucket.CreationDate.UTC().Format("YYYY-MM-DDThh:mm:ss.sssZ"),
+			CreatedAt:  bucket.CreationDate.UTC().Format("2006-01-02T15:04:05Z07:00"),
 		}
 	}
 	// send response
