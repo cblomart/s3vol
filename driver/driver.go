@@ -61,7 +61,23 @@ func NewDriver(c *cli.Context) (*S3fsDriver, error) {
 	log.WithField("command", "driver").Infof("region: %s", region)
 	log.WithField("command", "driver").Infof("mount: %s", mount)
 	log.WithField("command", "driver").Infof("default options: %#v", defaults)
+	// test connection to s3
+	_, err = driver.getClient()
+	if err != nil {
+		log.WithField("command", "driver").Errorf("could not connect to s3: %s", err)
+		return nil, fmt.Errorf("could not connect to s3: %s", err)
+	}
 	return driver, nil
+}
+
+func (d *S3fsDriver) getClient() (*minio.Client, error) {
+	// get a s3 client
+	clt, err := minio.New(d.Endpoint, d.AccessKey, d.SecretKey, d.UseSSL)
+	if err != nil {
+		log.WithField("command", "driver").Errorf("cannot get s3 client: %s", err)
+		return nil, fmt.Errorf("cannot get s3 client: %s", err)
+	}
+	return clt, nil
 }
 
 //Create creates a volume
