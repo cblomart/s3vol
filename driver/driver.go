@@ -44,7 +44,7 @@ func NewDriver(c *cli.Context) (*S3fsDriver, error) {
 	secretkey := c.String("secretkey")
 	region := c.String("region")
 	replaceunderscores := c.Bool("replaceunderscores")
-	configbucketname := c.String("configbucketname")
+	configbucketname := c.String("configbucket")
 	mount := c.String("mount")
 	mount = strings.TrimLeft(mount, "/")
 	defaults, err := parseOptions(c.String("defaults"))
