@@ -76,6 +76,20 @@ func main() {
 						EnvVars: []string{"S3VOL_DEFAULTS"},
 						Usage:   "s3fs default options",
 					},
+					&cli.BoolFlag{
+						Name:    "replaceunderscores",
+						Aliases: []string{"u"},
+						Value:   true,
+						EnvVars: []string{"S3VOL_REPLACEUNDERSCORES"},
+						Usage:   "replace underscores by ---",
+					},
+					&cli.StringFlag{
+						Name:    "configbucket",
+						Aliases: []string{"b"},
+						Value:   "s3volconfig",
+						EnvVars: []string{"S3VOL_CONFIGBUCKET"},
+						Usage:   "bucket to store configuration",
+					},
 				},
 			},
 			{
