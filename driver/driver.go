@@ -377,13 +377,13 @@ func (d *S3fsDriver) Get(req *volume.GetRequest) (*volume.GetResponse, error) {
 	log.WithField("command", "driver").WithField("method", "get").Debugf("request: %+v", req)
 	vol, err := d.getVolumeConfig(req.Name)
 	if err != nil {
-		log.WithField("command", "driver").Errorf("could not get volume config for '%s': %s", req.Name, err)
+		log.WithField("command", "driver").WithField("method", "get").Errorf("could not get volume config for '%s': %s", req.Name, err)
 		return nil, fmt.Errorf("could not get volume config for '%s': %s", req.Name, err)
 	}
 	// get bucket infos
 	bucketInfos, err := d.s3client.ListBuckets()
 	if err != nil {
-		log.WithField("command", "driver").Errorf("could not get bucket infos: %s", err)
+		log.WithField("command", "driver").WithField("method", "get").Errorf("could not get bucket infos: %s", err)
 		return nil, fmt.Errorf("could not get bucket infos: %s", err)
 	}
 	// get creation date
@@ -406,7 +406,25 @@ func (d *S3fsDriver) Get(req *volume.GetRequest) (*volume.GetResponse, error) {
 //Remove removes a volume
 func (d *S3fsDriver) Remove(req *volume.RemoveRequest) error {
 	log.WithField("command", "driver").WithField("method", "remove").Debugf("request: %+v", req)
-	return fmt.Errorf("not implemented")
+	// get volume config
+	volConfig, err := d.getVolumeConfig(req.Name)
+	if err != nil {
+		log.WithField("command", "driver").WithField("method", "remove").Errorf("could not get vol infos: %s", err)
+		return fmt.Errorf("could not get vol infos: %s", err)
+	}
+	// remove bucket
+	err = d.s3client.RemoveBucket(volConfig.Bucket)
+	if err != nil {
+		log.WithField("command", "driver").WithField("method", "remove").Errorf("could not remove bucket: %s", err)
+		return fmt.Errorf("could not remove bucket: %s", err)
+	}
+	// remove config
+	err = d.removeVolumeConfig(req.Name)
+	if err != nil {
+		log.WithField("command", "driver").WithField("method", "remove").Errorf("could not remove volume config: %s", err)
+		return fmt.Errorf("could not remove volume config: %s", err)
+	}
+	return nil
 }
 
 //Path provides the path
