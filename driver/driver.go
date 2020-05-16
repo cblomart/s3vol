@@ -102,14 +102,7 @@ func NewDriver(c *cli.Context) (*S3fsDriver, error) {
 		return nil, fmt.Errorf("could not check bucket '%s': %s", configbucketname, err)
 	}
 	// check config object existance
-	stat, err := clt.StatObject(configbucketname, configObject, minio.StatObjectOptions{})
-	if err != nil {
-		log.WithField("command", "driver").Errorf("could not stat config '%s': %s", configbucketname, err)
-		return nil, fmt.Errorf("could not stat config '%s': %s", configbucketname, err)
-	}
-	log.WithField("command", "driver").Debugf("stat '%s': %+v", stat)
-	// check for volumes object
-	_, err = clt.GetObject(configbucketname, configObject, minio.GetObjectOptions{})
+	_, err = clt.StatObject(configbucketname, configObject, minio.StatObjectOptions{})
 	if err != nil {
 		// create an empty config object
 		reader := strings.NewReader(emptyVolume)
