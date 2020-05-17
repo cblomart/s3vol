@@ -260,14 +260,27 @@ func (d *S3fsDriver) Remove(req *volume.RemoveRequest) error {
 		log.WithField("command", "driver").WithField("method", "remove").Errorf("could not get vol infos: %s", err)
 		return fmt.Errorf("could not get vol infos: %s", err)
 	}
-	// remove bucket
-	err = d.s3client.RemoveBucket(volConfig.Bucket)
+	// check bucket
+	buckets, err := d.s3client.ListBuckets()
 	if err != nil {
-		log.WithField("command", "driver").WithField("method", "remove").Errorf("could not remove bucket: %s", err)
-		return fmt.Errorf("could not remove bucket: %s", err)
+		log.WithField("command", "driver").WithField("method", "remove").Errorf("could not list buckets: %s", err)
+		return fmt.Errorf("could not list buckets: %s", err)
+	}
+	for _, bucket := range buckets {
+		if bucket.Name == volConfig.Bucket {
+			log.WithField("command", "driver").WithField("method", "remove").Infof("removing bucket: %s", volConfig.Bucket)
+			// remove bucket
+			err = d.s3client.RemoveBucket(volConfig.Bucket)
+			if err != nil {
+				log.WithField("command", "driver").WithField("method", "remove").Errorf("could not remove bucket: %s", err)
+				return fmt.Errorf("could not remove bucket: %s", err)
+			}
+			break
+		}
 	}
 	// remove config
-	err = d.removeVolumeConfig(req.Name)
+	log.WithField("command", "driver").WithField("method", "remove").Infof("removing config: %s", volConfig.Name)
+	err = d.removeVolumeConfig(volConfig.Name)
 	if err != nil {
 		log.WithField("command", "driver").WithField("method", "remove").Errorf("could not remove volume config: %s", err)
 		return fmt.Errorf("could not remove volume config: %s", err)
