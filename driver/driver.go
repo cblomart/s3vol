@@ -107,7 +107,7 @@ func NewDriver(c *cli.Context) (*S3fsDriver, error) {
 		return nil, fmt.Errorf("could not write s3fs password file: %s", err)
 	}
 	// add connection info to default options
-	defaults["url"] = endpoint
+	defaults["url"] = u.String()
 	defaults["endpoint"] = region
 	driver := &S3fsDriver{
 		Endpoint:           endpoint,
