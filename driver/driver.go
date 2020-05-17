@@ -61,7 +61,7 @@ func NewDriver(c *cli.Context) (*S3fsDriver, error) {
 				log.WithField("command", "driver").Debugf("path %s/s3fs is a directory", p)
 				continue
 			}
-			if !strings.Contains(info.Mode().String(), "7") {
+			if !strings.Contains(info.Mode().String(), "x") {
 				log.WithField("command", "driver").Debugf("file %s/s3fs is not executable (%s)", p, info.Mode().String())
 				continue
 			}
