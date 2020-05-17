@@ -418,8 +418,6 @@ func (d *S3fsDriver) Unmount(req *volume.UnmountRequest) error {
 	// generate mount path
 	path := fmt.Sprintf("%s/%s", d.RootMount, volConfig.Name)
 	// unmount volume
-	d.mounts[volConfig.Name] = d.mounts[volConfig.Name] - 1
-	log.WithField("command", "driver").WithField("method", "unmount").Infof("volume %s is used by %d containers", volConfig.Name, d.mounts[volConfig.Name])
 	// generate command
 	cmd := fmt.Sprintf("umount %s", path)
 	log.WithField("command", "driver").WithField("method", "unmount").Infof("cmd: %s", cmd)
