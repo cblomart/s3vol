@@ -225,7 +225,7 @@ func (d *S3fsDriver) Get(req *volume.GetRequest) (*volume.GetResponse, error) {
 	log.WithField("command", "driver").WithField("method", "get").Debugf("request: %+v", req)
 	vol, err := d.getVolumeConfig(req.Name)
 	if err != nil {
-		log.WithField("command", "driver").WithField("method", "get").Errorf("could not get volume config for '%s': %s", req.Name, err)
+		log.WithField("command", "driver").WithField("method", "get").Warnf("could not get volume config for '%s': %s", req.Name, err)
 		return nil, fmt.Errorf("could not get volume config for '%s': %s", req.Name, err)
 	}
 	// get bucket infos

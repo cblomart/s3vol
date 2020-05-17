@@ -156,7 +156,7 @@ func (d *S3fsDriver) getVolumeConfig(volumeName string) (*VolConfig, error) {
 		return nil, fmt.Errorf("could not read config '%s' from bucket '%s': %s", configObject, d.ConfigBucketName, err)
 	}
 	if volConfig == nil {
-		log.WithField("command", "driver").Errorf("could not find config for '%s': %s", volumeName, err)
+		log.WithField("command", "driver").Warnf("could not find config for '%s': %s", volumeName, err)
 		return nil, fmt.Errorf("could not find config for '%s': %s", volumeName, err)
 	}
 	return volConfig, nil
