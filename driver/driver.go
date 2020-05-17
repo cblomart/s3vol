@@ -181,7 +181,7 @@ func (d *S3fsDriver) Create(req *volume.CreateRequest) error {
 		log.WithField("command", "driver").WithField("method", "create").Errorf("could add volume config: %s", err)
 		return fmt.Errorf("could add volume config: %s", err)
 	}
-	return fmt.Errorf("not implemented")
+	return nil
 }
 
 //List lists volumes
