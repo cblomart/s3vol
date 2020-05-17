@@ -22,10 +22,10 @@ func parseOptions(options string) (map[string]string, error) {
 			defaults[o] = "true"
 			continue
 		}
-		infos := strings.SplitN(o, "=", 1)
+		infos := strings.SplitN(o, "=", 2)
 		if len(infos) != 2 {
-			log.WithField("command", "driver").Errorf("could not parse default options: %s", o)
-			return nil, fmt.Errorf("could not parse default options: %s", o)
+			log.WithField("command", "driver").Errorf("could not parse  options: %s", o)
+			return nil, fmt.Errorf("could not parse  options: %s", o)
 		}
 		if strings.ToLower(infos[1]) == "false" {
 			continue
