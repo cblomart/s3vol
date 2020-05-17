@@ -5,7 +5,9 @@ import (
 	"io/ioutil"
 	"net/url"
 	"os"
+	"os/exec"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/docker/go-plugins-helpers/volume"
@@ -35,6 +37,8 @@ type S3fsDriver struct {
 	Defaults           map[string]string
 	s3client           *minio.Client
 	s3fspath           string
+	mounts             map[string]int
+	mountsLock         sync.Mutex
 }
 
 //VolConfig represents the configuration of a volume
@@ -331,14 +335,24 @@ func (d *S3fsDriver) Mount(req *volume.MountRequest) (*volume.MountResponse, err
 		log.WithField("command", "driver").WithField("method", "mount").Errorf("could not get vol infos: %s", err)
 		return nil, fmt.Errorf("could not get vol infos: %s", err)
 	}
+	// generate mount path
+	path := fmt.Sprintf("%s/%s", d.RootMount, volConfig.Name)
+	// check if already mounted
+	d.mountsLock.Lock()
+	defer d.mountsLock.Unlock()
+	if _, ok := d.mounts[volConfig.Name]; ok {
+		if d.mounts[volConfig.Name] > 0 {
+			d.mounts[volConfig.Name]++
+			log.WithField("command", "driver").WithField("method", "mount").Infof("volume %s is used by %d containers", volConfig.Name, d.mounts[volConfig.Name])
+			return &volume.MountResponse{Mountpoint: path}, nil
+		}
+	}
 	// merging driver options and volume options
 	// volume options have precedence
 	options := d.Defaults
 	for k, v := range volConfig.Options {
 		options[k] = v
 	}
-	// generate mount path
-	path := fmt.Sprintf("%s/%s", d.RootMount, volConfig.Name)
 	// create path if not exists
 	info, err := os.Stat(path)
 	if err != nil && !os.IsNotExist(err) {
@@ -361,13 +375,60 @@ func (d *S3fsDriver) Mount(req *volume.MountRequest) (*volume.MountResponse, err
 	// generate command
 	cmd := fmt.Sprintf("%s %s %s -o %s", d.s3fspath, volConfig.Bucket, path, optionsToString(options))
 	log.WithField("command", "driver").WithField("method", "mount").Infof("cmd: %s", cmd)
-	return nil, fmt.Errorf("not implemented")
+	err = exec.Command("sh", "-c", cmd).Run()
+	if err != nil {
+		log.WithField("command", "driver").WithField("method", "mount").Errorf("error executing the mount command: %s", err)
+		return nil, fmt.Errorf("error executing the mount command: %s", err)
+	}
+	d.mounts[volConfig.Name]++
+	log.WithField("command", "driver").WithField("method", "mount").Infof("volume %s is used by %d containers", volConfig.Name, d.mounts[volConfig.Name])
+	return &volume.MountResponse{Mountpoint: path}, nil
 }
 
 //Unmount unmounts a volume
 func (d *S3fsDriver) Unmount(req *volume.UnmountRequest) error {
 	log.WithField("command", "driver").WithField("method", "unmount").Debugf("request: %+v", req)
-	return fmt.Errorf("not implemented")
+	// get volume configurtion
+	// get volume config
+	volConfig, err := d.getVolumeConfig(req.Name)
+	if err != nil {
+		log.WithField("command", "driver").WithField("method", "unmount").Errorf("could not get vol infos: %s", err)
+		return fmt.Errorf("could not get vol infos: %s", err)
+	}
+	// aquire mount lock
+	d.mountsLock.Lock()
+	defer d.mountsLock.Unlock()
+	// check that volume was mounted at least once
+	if _, ok := d.mounts[volConfig.Name]; !ok {
+		log.WithField("command", "driver").WithField("method", "unmount").Errorf("could not find mount infos for %s", volConfig.Name)
+		return fmt.Errorf("could not find mount infos for %s", volConfig.Name)
+	}
+	if d.mounts[volConfig.Name] <= 0 {
+		log.WithField("command", "driver").WithField("method", "unmount").Errorf("volume %s is apparently not mouted", volConfig.Name)
+		return fmt.Errorf("volume %s is apparently not mouted", volConfig.Name)
+	}
+	// check if other container still have this mounted
+	if d.mounts[volConfig.Name] > 1 {
+		d.mounts[volConfig.Name]--
+		log.WithField("command", "driver").WithField("method", "unmount").Infof("volume %s is used by %d containers", volConfig.Name, d.mounts[volConfig.Name])
+		return nil
+	}
+	// generate mount path
+	path := fmt.Sprintf("%s/%s", d.RootMount, volConfig.Name)
+	// unmount volume
+	d.mounts[volConfig.Name]--
+	log.WithField("command", "driver").WithField("method", "unmount").Infof("volume %s is used by %d containers", volConfig.Name, d.mounts[volConfig.Name])
+	// generate command
+	cmd := fmt.Sprintf("umount %s", path)
+	log.WithField("command", "driver").WithField("method", "unmount").Infof("cmd: %s", cmd)
+	err = exec.Command("sh", "-c", cmd).Run()
+	if err != nil {
+		log.WithField("command", "driver").WithField("method", "umount").Errorf("error executing the umount command: %s", err)
+		return fmt.Errorf("error executing the umount command: %s", err)
+	}
+	d.mounts[volConfig.Name]--
+	log.WithField("command", "driver").WithField("method", "unmount").Infof("volume %s is used by %d containers", volConfig.Name, d.mounts[volConfig.Name])
+	return nil
 }
 
 //Capabilities returns capabilities
