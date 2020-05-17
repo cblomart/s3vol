@@ -269,6 +269,20 @@ func (d *S3fsDriver) Remove(req *volume.RemoveRequest) error {
 	for _, bucket := range buckets {
 		if bucket.Name == volConfig.Bucket {
 			log.WithField("command", "driver").WithField("method", "remove").Infof("removing bucket: %s", volConfig.Bucket)
+			// empty bucket
+			// Create a done channel to control 'ListObjectsV2' go routine.
+			doneCh := make(chan struct{})
+			// Indicate to our routine to exit cleanly upon return.
+			defer close(doneCh)
+			isRecursive := true
+			objectCh := d.s3client.ListObjectsV2(volConfig.Bucket, "", isRecursive, doneCh)
+			for object := range objectCh {
+				if object.Err != nil {
+					log.WithField("command", "driver").WithField("method", "remove").Infof("bucket has error: %s", object.Err)
+					continue
+				}
+				log.WithField("command", "driver").WithField("method", "remove").Debugf("object: %+v", object)
+			}
 			// remove bucket
 			err = d.s3client.RemoveBucket(volConfig.Bucket)
 			if err != nil {
