@@ -94,7 +94,7 @@ func NewDriver(c *cli.Context) (*S3fsDriver, error) {
 	replaceunderscores := c.Bool("replaceunderscores")
 	configbucketname := c.String("configbucket")
 	mount := c.String("mount")
-	mount = strings.TrimLeft(mount, "/")
+	mount = strings.TrimRight(mount, "/")
 	defaults, err := parseOptions(c.String("defaults"))
 	if err != nil {
 		log.WithField("command", "driver").Errorf("could not parse options: %s", err)
