@@ -51,16 +51,21 @@ func NewDriver(c *cli.Context) (*S3fsDriver, error) {
 		path := os.Getenv("PATH")
 		paths := strings.Split(path, ":")
 		for _, p := range paths {
+			log.WithField("command", "driver").Debugf("checking for s3fs in %s", p)
 			info, err := os.Stat(fmt.Sprintf("%s/s3fs", p))
 			if err != nil {
+				log.WithField("command", "driver").Debugf("could not stat %s/s3fs: %s", p, err)
 				continue
 			}
 			if info.IsDir() {
+				log.WithField("command", "driver").Debugf("path %s/s3fs is a directory", p)
 				continue
 			}
 			if !strings.Contains(info.Mode().String(), "7") {
+				log.WithField("command", "driver").Debugf("file %s/s3fs is not executable (%s)", p, info.Mode().String())
 				continue
 			}
+			log.WithField("command", "driver").Debugf("found s3fs path: %s/s3fs", p)
 			s3fspath = fmt.Sprintf("%s/s3fs", p)
 			break
 		}
