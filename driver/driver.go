@@ -126,6 +126,7 @@ func NewDriver(c *cli.Context) (*S3fsDriver, error) {
 		ConfigBucketName:   configbucketname,
 		Defaults:           defaults,
 		s3fspath:           s3fspath,
+		mounts:             make(map[string]int),
 	}
 	log.WithField("command", "driver").Infof("endpoint: %s", endpoint)
 	log.WithField("command", "driver").Infof("use ssl: %v", usessl)
