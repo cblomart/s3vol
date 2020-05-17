@@ -109,6 +109,8 @@ func NewDriver(c *cli.Context) (*S3fsDriver, error) {
 	// add connection info to default options
 	defaults["url"] = u.String()
 	defaults["endpoint"] = region
+	// default use path request style for minio
+	defaults["use_path_request_style"] = "true"
 	driver := &S3fsDriver{
 		Endpoint:           endpoint,
 		UseSSL:             usessl,
