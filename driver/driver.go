@@ -342,7 +342,7 @@ func (d *S3fsDriver) Mount(req *volume.MountRequest) (*volume.MountResponse, err
 	defer d.mountsLock.Unlock()
 	if _, ok := d.mounts[volConfig.Name]; ok {
 		if d.mounts[volConfig.Name] > 0 {
-			d.mounts[volConfig.Name]++
+			d.mounts[volConfig.Name] = d.mounts[volConfig.Name] + 1
 			log.WithField("command", "driver").WithField("method", "mount").Infof("volume %s is used by %d containers", volConfig.Name, d.mounts[volConfig.Name])
 			return &volume.MountResponse{Mountpoint: path}, nil
 		}
@@ -380,7 +380,7 @@ func (d *S3fsDriver) Mount(req *volume.MountRequest) (*volume.MountResponse, err
 		log.WithField("command", "driver").WithField("method", "mount").Errorf("error executing the mount command: %s", err)
 		return nil, fmt.Errorf("error executing the mount command: %s", err)
 	}
-	d.mounts[volConfig.Name]++
+	d.mounts[volConfig.Name] = d.mounts[volConfig.Name] + 1
 	log.WithField("command", "driver").WithField("method", "mount").Infof("volume %s is used by %d containers", volConfig.Name, d.mounts[volConfig.Name])
 	return &volume.MountResponse{Mountpoint: path}, nil
 }
@@ -409,14 +409,14 @@ func (d *S3fsDriver) Unmount(req *volume.UnmountRequest) error {
 	}
 	// check if other container still have this mounted
 	if d.mounts[volConfig.Name] > 1 {
-		d.mounts[volConfig.Name]--
+		d.mounts[volConfig.Name] = d.mounts[volConfig.Name] - 1
 		log.WithField("command", "driver").WithField("method", "unmount").Infof("volume %s is used by %d containers", volConfig.Name, d.mounts[volConfig.Name])
 		return nil
 	}
 	// generate mount path
 	path := fmt.Sprintf("%s/%s", d.RootMount, volConfig.Name)
 	// unmount volume
-	d.mounts[volConfig.Name]--
+	d.mounts[volConfig.Name] = d.mounts[volConfig.Name] - 1
 	log.WithField("command", "driver").WithField("method", "unmount").Infof("volume %s is used by %d containers", volConfig.Name, d.mounts[volConfig.Name])
 	// generate command
 	cmd := fmt.Sprintf("umount %s", path)
