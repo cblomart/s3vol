@@ -225,16 +225,17 @@ func (d *S3fsDriver) removeVolumeConfig(volumeName string) error {
 		if strings.HasPrefix(scanner.Text(), "#") {
 			_, err := buf.WriteString(fmt.Sprintf("%s\n", scanner.Text()))
 			if err != nil {
-				log.WithField("command", "driver").Warn("wrong cannot write to buffer: %s", err)
+				log.WithField("command", "driver").Warnf("wrong cannot write to buffer: %s", err)
 			}
 			continue
 		}
 		// check that ; is in line
 		if !strings.Contains(scanner.Text(), ";") {
-			log.WithField("command", "driver").Warn("wrong line in config: %s", scanner.Text())
+			log.WithField("command", "driver").Warnf("wrong line in config: %s", scanner.Text())
 			continue
 		}
 		if strings.HasPrefix(fmt.Sprintf("%s;", volumeName), scanner.Text()) {
+			log.WithField("command", "driver").Debugf("skipping line begining with '%s': %s", volumeName, scanner.Text())
 			continue
 		}
 		_, err := buf.WriteString(fmt.Sprintf("%s\n", scanner.Text()))
@@ -243,6 +244,7 @@ func (d *S3fsDriver) removeVolumeConfig(volumeName string) error {
 		}
 	}
 	// write the config to bucket
+	log.WithField("command", "driver").Debugf("writing updated config: \n%s", string(buf.Bytes()))
 	reader := bytes.NewReader(buf.Bytes())
 	_, err = d.s3client.PutObject(d.ConfigBucketName, configObject, reader, reader.Size(), minio.PutObjectOptions{})
 	if err != nil {
