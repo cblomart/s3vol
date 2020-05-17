@@ -2,7 +2,9 @@ package driver
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 
@@ -17,6 +19,7 @@ const (
 # volumename;bucket;options
 `
 	configObject = "volumes"
+	s3fspwdfile  = "/etc/passwd-s3fs"
 )
 
 //S3fsDriver is a volume driver over s3fs
@@ -31,6 +34,7 @@ type S3fsDriver struct {
 	ConfigBucketName   string
 	Defaults           map[string]string
 	s3client           *minio.Client
+	s3fspath           string
 }
 
 //VolConfig represents the configuration of a volume
@@ -42,6 +46,29 @@ type VolConfig struct {
 
 //NewDriver creates a new S3FS driver
 func NewDriver(c *cli.Context) (*S3fsDriver, error) {
+	s3fspath := c.String("s3fspath")
+	if len(s3fspath) == 0 {
+		path := os.Getenv("PATH")
+		paths := strings.Split(path, ":")
+		for _, p := range paths {
+			info, err := os.Stat(fmt.Sprintf("%s/s3fs", p))
+			if err != nil {
+				continue
+			}
+			if info.IsDir() {
+				continue
+			}
+			if !strings.Contains(info.Mode().String(), "7") {
+				continue
+			}
+			s3fspath = fmt.Sprintf("%s/s3fs", p)
+			break
+		}
+	}
+	if len(s3fspath) == 0 {
+		log.WithField("command", "driver").Errorf("could not get s3fs path: provide s3fs path or install it")
+		return nil, fmt.Errorf("could not get s3fs path: provide s3fs path or install it")
+	}
 	u, err := url.Parse(c.String("endpoint"))
 	if err != nil {
 		log.WithField("command", "driver").Errorf("could not parse endpoint: %s", err)
@@ -68,6 +95,15 @@ func NewDriver(c *cli.Context) (*S3fsDriver, error) {
 		log.WithField("command", "driver").Errorf("could not parse options: %s", err)
 		return nil, fmt.Errorf("could not parse options: %s", err)
 	}
+	// save s3fs password
+	err = ioutil.WriteFile(s3fspwdfile, []byte(fmt.Sprintf("%s:%s", accesskey, secretkey)), 0660)
+	if err != nil {
+		log.WithField("command", "driver").Errorf("could not write s3fs password file: %s", err)
+		return nil, fmt.Errorf("could not write s3fs password file: %s", err)
+	}
+	// add connection info to default options
+	defaults["url"] = endpoint
+	defaults["endpoint"] = region
 	driver := &S3fsDriver{
 		Endpoint:           endpoint,
 		UseSSL:             usessl,
@@ -78,6 +114,7 @@ func NewDriver(c *cli.Context) (*S3fsDriver, error) {
 		ReplaceUnderscores: replaceunderscores,
 		ConfigBucketName:   configbucketname,
 		Defaults:           defaults,
+		s3fspath:           s3fspath,
 	}
 	log.WithField("command", "driver").Infof("endpoint: %s", endpoint)
 	log.WithField("command", "driver").Infof("use ssl: %v", usessl)
@@ -246,6 +283,43 @@ func (d *S3fsDriver) Path(req *volume.PathRequest) (*volume.PathResponse, error)
 //Mount mounts a volume
 func (d *S3fsDriver) Mount(req *volume.MountRequest) (*volume.MountResponse, error) {
 	log.WithField("command", "driver").WithField("method", "mount").Debugf("request: %+v", req)
+	// get volume configurtion
+	// get volume config
+	volConfig, err := d.getVolumeConfig(req.Name)
+	if err != nil {
+		log.WithField("command", "driver").WithField("method", "mount").Errorf("could not get vol infos: %s", err)
+		return nil, fmt.Errorf("could not get vol infos: %s", err)
+	}
+	// merging driver options and volume options
+	// volume options have precedence
+	options := d.Defaults
+	for k, v := range volConfig.Options {
+		options[k] = v
+	}
+	// generate mount path
+	path := fmt.Sprintf("%s/%s", d.RootMount, volConfig.Name)
+	// create path if not exists
+	info, err := os.Stat(path)
+	if err != nil && !os.IsNotExist(err) {
+		log.WithField("command", "driver").WithField("method", "mount").Errorf("could not get mount path %s: %s", path, err)
+		return nil, fmt.Errorf("could not get mount path %s: %s", path, err)
+	}
+	if os.IsNotExist(err) {
+		// create path
+		err := os.Mkdir(path, 0770)
+		if err != nil {
+			log.WithField("command", "driver").WithField("method", "mount").Errorf("could not create mount path %s: %s", path, err)
+			return nil, fmt.Errorf("could not create mount path %s: %s", path, err)
+		}
+	} else {
+		if !info.IsDir() {
+			log.WithField("command", "driver").WithField("method", "mount").Errorf("mount path %s is not a directory: %s", path, err)
+			return nil, fmt.Errorf("mount path %s is not a directory: %s", path, err)
+		}
+	}
+	// generate command
+	cmd := fmt.Sprintf("%s %s %s -o %s", d.s3fspath, volConfig.Bucket, path, optionsToString(options))
+	log.WithField("command", "driver").WithField("method", "mount").Infof("cmd: %s", cmd)
 	return nil, fmt.Errorf("not implemented")
 }
 

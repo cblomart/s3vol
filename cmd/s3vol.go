@@ -90,6 +90,12 @@ func main() {
 						EnvVars: []string{"S3VOL_CONFIGBUCKET"},
 						Usage:   "bucket to store configuration",
 					},
+					&cli.StringFlag{
+						Name:    "s3fspath",
+						Value:   "",
+						EnvVars: []string{"S3VOL_S3FSPATH"},
+						Usage:   "path to s3fs command",
+					},
 				},
 			},
 			{
