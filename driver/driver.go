@@ -379,8 +379,19 @@ func (d *S3fsDriver) Mount(req *volume.MountRequest) (*volume.MountResponse, err
 	log.WithField("command", "driver").WithField("method", "mount").Infof("cmd: %s", cmd)
 	err = exec.Command("sh", "-c", cmd).Run()
 	if err != nil {
-		log.WithField("command", "driver").WithField("method", "mount").Errorf("error executing the mount command: %s", err)
-		return nil, fmt.Errorf("error executing the mount command: %s", err)
+		switch e := err.(type) {
+		case *exec.ExitError:
+			if len(e.Stderr) > 0 {
+				message := strings.ReplaceAll(string(e.Stderr), "\n", "\\n")
+				log.WithField("command", "driver").WithField("method", "umount").Errorf("error executing the umount command: '%s'", message)
+				return nil, fmt.Errorf("error executing the umount command: '%s'", message)
+			}
+			log.WithField("command", "driver").WithField("method", "umount").Errorf("error executing the mount command: %s", err)
+			return nil, fmt.Errorf("error executing the umount command: %s", err)
+		default:
+			log.WithField("command", "driver").WithField("method", "umount").Errorf("error executing the mount command: %s", err)
+			return nil, fmt.Errorf("error executing the mount command: %s", err)
+		}
 	}
 	d.mounts[volConfig.Name]++
 	log.WithField("command", "driver").WithField("method", "mount").Infof("volume %s is used by %d containers", volConfig.Name, d.mounts[volConfig.Name])
@@ -423,8 +434,19 @@ func (d *S3fsDriver) Unmount(req *volume.UnmountRequest) error {
 	log.WithField("command", "driver").WithField("method", "unmount").Infof("cmd: %s", cmd)
 	err = exec.Command("sh", "-c", cmd).Run()
 	if err != nil {
-		log.WithField("command", "driver").WithField("method", "umount").Errorf("error executing the umount command: %s", err)
-		return fmt.Errorf("error executing the umount command: %s", err)
+		switch e := err.(type) {
+		case *exec.ExitError:
+			if len(e.Stderr) > 0 {
+				message := strings.ReplaceAll(string(e.Stderr), "\n", "\\n")
+				log.WithField("command", "driver").WithField("method", "umount").Errorf("error executing the umount command: '%s'", message)
+				return fmt.Errorf("error executing the umount command: '%s'", message)
+			}
+			log.WithField("command", "driver").WithField("method", "umount").Errorf("error executing the umount command: %s", err)
+			return fmt.Errorf("error executing the umount command: %s", err)
+		default:
+			log.WithField("command", "driver").WithField("method", "umount").Errorf("error executing the umount command: %s", err)
+			return fmt.Errorf("error executing the umount command: %s", err)
+		}
 	}
 	d.mounts[volConfig.Name]--
 	log.WithField("command", "driver").WithField("method", "unmount").Infof("volume %s is used by %d containers", volConfig.Name, d.mounts[volConfig.Name])
