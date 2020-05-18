@@ -132,10 +132,10 @@ func NewDriver(c *cli.Context) (*S3fsDriver, error) {
 	log.WithField("command", "driver").Infof("use ssl: %v", usessl)
 	log.WithField("command", "driver").Infof("access key: %s", accesskey)
 	log.WithField("command", "driver").Infof("region: %s", region)
-	log.WithField("command", "driver").Infof("replace underscores: %s", replaceunderscores)
+	log.WithField("command", "driver").Infof("replace underscores: %v", replaceunderscores)
 	log.WithField("command", "driver").Infof("mount: %s", mount)
 	log.WithField("command", "driver").Infof("config bucket: %s", configbucketname)
-	log.WithField("command", "driver").Infof("default options: %+v", defaults)
+	log.WithField("command", "driver").Infof("default options: %s", optionsToString(defaults))
 	// get a s3 client
 	clt, err := minio.NewWithRegion(endpoint, accesskey, secretkey, usessl, region)
 	if err != nil {
