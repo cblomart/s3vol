@@ -4,8 +4,7 @@
 	"entrypoint": ["/usr/local/bin/s3vol","serve"],
     "Args": {
         "Description": "socket to listen to",
-        "Name": "socket",
-        "Settable": false,
+        "Name": "--socket",
         "Value": "/s3vol.sock"
     },
 	"network": {
