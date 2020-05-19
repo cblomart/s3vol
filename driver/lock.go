@@ -63,7 +63,7 @@ func (d *S3fsDriver) Lock(bucket string, object string) error {
 		return fmt.Errorf("could not put lock: %s", err)
 	}
 	// obtained the lock
-	log.WithField("object", "minio").WithField("mehtod", "lock").WithField("bucket", bucket).WithField("object", object).Errorf("locked")
+	log.WithField("object", "minio").WithField("mehtod", "lock").WithField("bucket", bucket).WithField("object", object).Infof("locked")
 	return nil
 }
 
@@ -106,6 +106,6 @@ func (d *S3fsDriver) UnLock(bucket string, object string) error {
 		return fmt.Errorf("could not remove lock: %s", err)
 	}
 	// unlocked
-	log.WithField("object", "minio").WithField("mehtod", "unlock").WithField("bucket", bucket).WithField("object", object).Errorf("unlocked")
+	log.WithField("object", "minio").WithField("mehtod", "unlock").WithField("bucket", bucket).WithField("object", object).Infof("unlocked")
 	return nil
 }
