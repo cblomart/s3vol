@@ -2,6 +2,12 @@
 	"description": "s3vol plugin for Docker",
 	"documentation": "https://github.com/cblomart/s3vol/",
 	"entrypoint": ["/usr/local/bin/s3vol","serve"],
+    "Args": {
+        "Description": "socket to listen to",
+        "Name": "socket",
+        "Settable": false,
+        "Value": "/s3vol.sock"
+    },
 	"network": {
 		   "type": "host"
 		   },
