@@ -1,0 +1,15 @@
+{
+	"description": "s3vol plugin for Docker",
+	"documentation": "https://github.com/cblomart/s3vol/",
+	"entrypoint": ["/usr/local/bin/s3vol","serve"],
+	"network": {
+		   "type": "host"
+		   },
+	"interface" : {
+		   "types": ["docker.volumedriver/1.0"],
+		   "socket": "s3vol.sock"
+	},
+	"linux": {
+		"capabilities": ["CAP_SYS_ADMIN"]
+	}
+}
