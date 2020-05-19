@@ -76,6 +76,13 @@ func (d *S3fsDriver) createBucket(bucket string) error {
 }
 
 func (d *S3fsDriver) getVolumesConfig() ([]*VolConfig, error) {
+	// Lock config
+	err := d.Lock(d.ConfigBucketName, configObject)
+	if err != nil {
+		log.WithField("command", "driver").Errorf("could not lock config '%s' from bucket '%s': %s", configObject, d.ConfigBucketName, err)
+		return nil, fmt.Errorf("could not lock config '%s' from bucket '%s': %s", configObject, d.ConfigBucketName, err)
+	}
+	defer d.UnLock(d.ConfigBucketName, configObject)
 	// get the config object
 	obj, err := d.s3client.GetObject(d.ConfigBucketName, configObject, minio.GetObjectOptions{})
 	if err != nil {
@@ -113,6 +120,13 @@ func (d *S3fsDriver) getVolumesConfig() ([]*VolConfig, error) {
 }
 
 func (d *S3fsDriver) getVolumeConfig(volumeName string) (*VolConfig, error) {
+	// Lock config
+	err := d.Lock(d.ConfigBucketName, configObject)
+	if err != nil {
+		log.WithField("command", "driver").Errorf("could not lock config '%s' from bucket '%s': %s", configObject, d.ConfigBucketName, err)
+		return nil, fmt.Errorf("could not lock config '%s' from bucket '%s': %s", configObject, d.ConfigBucketName, err)
+	}
+	defer d.UnLock(d.ConfigBucketName, configObject)
 	// get the config object
 	obj, err := d.s3client.GetObject(d.ConfigBucketName, configObject, minio.GetObjectOptions{})
 	if err != nil {
@@ -183,6 +197,13 @@ func (d *S3fsDriver) addVolumeConfig(volConfig *VolConfig) error {
 		}
 		return nil
 	}
+	// Lock config
+	err = d.Lock(d.ConfigBucketName, configObject)
+	if err != nil {
+		log.WithField("command", "driver").Errorf("could not lock config '%s' from bucket '%s': %s", configObject, d.ConfigBucketName, err)
+		return fmt.Errorf("could not lock config '%s' from bucket '%s': %s", configObject, d.ConfigBucketName, err)
+	}
+	defer d.UnLock(d.ConfigBucketName, configObject)
 	// get the config object
 	obj, err := d.s3client.GetObject(d.ConfigBucketName, configObject, minio.GetObjectOptions{})
 	if err != nil {
@@ -211,6 +232,13 @@ func (d *S3fsDriver) addVolumeConfig(volConfig *VolConfig) error {
 }
 
 func (d *S3fsDriver) removeVolumeConfig(volumeName string) error {
+	// Lock config
+	err := d.Lock(d.ConfigBucketName, configObject)
+	if err != nil {
+		log.WithField("command", "driver").Errorf("could not lock config '%s' from bucket '%s': %s", configObject, d.ConfigBucketName, err)
+		return fmt.Errorf("could not lock config '%s' from bucket '%s': %s", configObject, d.ConfigBucketName, err)
+	}
+	defer d.UnLock(d.ConfigBucketName, configObject)
 	// get the config object
 	obj, err := d.s3client.GetObject(d.ConfigBucketName, configObject, minio.GetObjectOptions{})
 	if err != nil {

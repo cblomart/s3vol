@@ -153,10 +153,20 @@ func NewDriver(c *cli.Context) (*S3fsDriver, error) {
 	if err != nil {
 		// create an empty config object
 		reader := strings.NewReader(emptyVolume)
-		_, err := clt.PutObject(configbucketname, configObject, reader, reader.Size(), minio.PutObjectOptions{})
+		err := driver.Lock(configbucketname, configObject)
+		if err != nil {
+			log.WithField("command", "driver").Errorf("could not lock config in %s: %s", configbucketname, err)
+			return nil, fmt.Errorf("could not lock config in %s: %s", configbucketname, err)
+		}
+		_, err = clt.PutObject(configbucketname, configObject, reader, reader.Size(), minio.PutObjectOptions{})
 		if err != nil {
 			log.WithField("command", "driver").Errorf("could not create config in %s: %s", configbucketname, err)
 			return nil, fmt.Errorf("could not create config in %s: %s", configbucketname, err)
+		}
+		err = driver.UnLock(configbucketname, configObject)
+		if err != nil {
+			log.WithField("command", "driver").Errorf("could not unlock config in %s: %s", configbucketname, err)
+			return nil, fmt.Errorf("could not unlock config in %s: %s", configbucketname, err)
 		}
 	}
 	// return the driver
