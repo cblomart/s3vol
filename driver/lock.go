@@ -31,7 +31,7 @@ func (d *S3fsDriver) Lock(bucket string, object string) error {
 	for {
 		_, err = d.s3client.StatObject(bucket, lock, minio.StatObjectOptions{})
 		if err != nil {
-			log.WithField("object", "minio").WithField("mehtod", "lock").WithField("bucket", bucket).WithField("object", lock).Infof("could not stat lock: %s", err)
+			log.WithField("object", "minio").WithField("mehtod", "lock").WithField("bucket", bucket).WithField("object", lock).Debugf("could not stat lock: %s", err)
 			break
 		}
 		// lock does exist
@@ -63,12 +63,13 @@ func (d *S3fsDriver) Lock(bucket string, object string) error {
 		return fmt.Errorf("could not put lock: %s", err)
 	}
 	// obtained the lock
+	log.WithField("object", "minio").WithField("mehtod", "lock").WithField("bucket", bucket).WithField("object", object).Errorf("locked")
 	return nil
 }
 
 // UnLock unlocks an object
 func (d *S3fsDriver) UnLock(bucket string, object string) error {
-	log.WithField("object", "minio").WithField("mehtod", "unlock").WithField("bucket", bucket).WithField("object", object).Debugf("locking object")
+	log.WithField("object", "minio").WithField("mehtod", "unlock").WithField("bucket", bucket).WithField("object", object).Debugf("unlocking object")
 	lock := fmt.Sprintf("%s%s", object, lockExt)
 	hostname, err := os.Hostname()
 	if err != nil {
@@ -104,5 +105,7 @@ func (d *S3fsDriver) UnLock(bucket string, object string) error {
 		log.WithField("object", "minio").WithField("mehtod", "unlock").WithField("bucket", bucket).WithField("object", lock).Errorf("could not remove lock: %s", err)
 		return fmt.Errorf("could not remove lock: %s", err)
 	}
+	// unlocked
+	log.WithField("object", "minio").WithField("mehtod", "unlock").WithField("bucket", bucket).WithField("object", object).Errorf("unlocked")
 	return nil
 }
