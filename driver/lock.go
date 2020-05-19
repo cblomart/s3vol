@@ -47,7 +47,7 @@ func (d *S3fsDriver) Lock(bucket string, object string) error {
 			log.WithField("object", "minio").WithField("mehtod", "lock").WithField("bucket", bucket).WithField("object", lock).Errorf("could not read lock: %s", err)
 			return fmt.Errorf("could not read lock: %s", err)
 		}
-		log.WithField("object", "minio").WithField("mehtod", "lock").WithField("bucket", bucket).WithField("object", lock).Infof("lock is held by %s, waiting 50ms", buf.String())
+		log.WithField("object", "minio").WithField("mehtod", "lock").WithField("bucket", bucket).WithField("object", lock).Debugf("lock is held by %s, waiting 50ms", buf.String())
 		// increase tried count
 		count++
 		if count > lockTimeOut {
