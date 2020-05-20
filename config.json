@@ -6,7 +6,7 @@
         {
             "description": "s3 socket",
             "name": "S3VOL_SOCKET",
-            "value": "/s3vol.sock"
+            "value": "/run/docker/plugins/s3vol.sock"
         },
         {
             "description": "s3 endpoint",
@@ -87,5 +87,6 @@
 	},
 	"linux": {
 		"capabilities": ["CAP_SYS_ADMIN"]
-	}
+    },
+    "PropagatedMount": "/mnt"
 }
