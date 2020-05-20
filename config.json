@@ -6,46 +6,73 @@
         {
             "description": "s3 endpoint",
             "name": "S3VOL_ENDPOINT",
+            "settable": [
+                "value"
+            ],
             "value": "http://localhost:9000"
         },
         {
             "description": "s3 access key",
             "name": "S3VOL_ACCESSKEY",
+            "settable": [
+                "value"
+            ],
             "value": ""
         },
         {
             "description": "s3 secret key",
             "name": "S3VOL_SECRETKEY",
+            "settable": [
+                "value"
+            ],
             "value": ""
         },
         {
             "description": "s3 region",
             "name": "S3VOL_REGION",
+            "settable": [
+                "value"
+            ],
             "value": "us-east-1"
         },
         {
             "description": "s3fs root",
             "name": "S3FS_ROOT",
+            "settable": [
+                "value"
+            ],
             "value": "/mnt"
         },
         {
             "description": "s3fs defaults",
             "name": "S3VOL_DEFAULTS",
+            "settable": [
+                "value"
+            ],
             "value": ""
         },
         {
             "description": "replace underscores",
             "name": "S3VOL_REPLACEUNDERSCORES",
+            "settable": [
+                "value"
+            ],
             "value": "true"
         },
         {
             "description": "s3 config bucket",
             "name": "S3VOL_CONFIGBUCKET",
+            "settable": [
+                "value"
+            ],
             "value": "s3volconfig"
         },
         {
             "description": "s3fs path",
             "name": "S3VOL_S3FSPATH",
+            "settable": [
+                "value"
+            ],
             "value": ""
         }
     ], 
