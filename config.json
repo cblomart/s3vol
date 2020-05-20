@@ -4,6 +4,11 @@
     "entrypoint": ["/usr/local/bin/s3vol","serve"],
     "env":[
         {
+            "description": "s3 socket",
+            "name": "S3VOL_SOCKET",
+            "value": "/s3vol.sock"
+        },
+        {
             "description": "s3 endpoint",
             "name": "S3VOL_ENDPOINT",
             "settable": [
