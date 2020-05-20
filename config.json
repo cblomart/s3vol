@@ -1,12 +1,54 @@
 {
 	"description": "s3vol plugin for Docker",
 	"documentation": "https://github.com/cblomart/s3vol/",
-	"entrypoint": ["/usr/local/bin/s3vol","serve"],
-    "Args": {
-        "Description": "socket to listen to",
-        "Name": "--socket",
-        "Value": "/s3vol.sock"
-    },
+    "entrypoint": ["/usr/local/bin/s3vol","serve"],
+    "env":[
+        {
+            "description": "s3 endpoint",
+            "name": "S3VOL_ENDPOINT",
+            "value": "http://localhost:9000"
+        },
+        {
+            "description": "s3 access key",
+            "name": "S3VOL_ACCESSKEY",
+            "value": ""
+        },
+        {
+            "description": "s3 secret key",
+            "name": "S3VOL_SECRETKEY",
+            "value": ""
+        },
+        {
+            "description": "s3 region",
+            "name": "S3VOL_REGION",
+            "value": "us-east-1"
+        },
+        {
+            "description": "s3fs root",
+            "name": "S3FS_ROOT",
+            "value": "/mnt"
+        },
+        {
+            "description": "s3fs defaults",
+            "name": "S3VOL_DEFAULTS",
+            "value": ""
+        },
+        {
+            "description": "replace underscores",
+            "name": "S3VOL_REPLACEUNDERSCORES",
+            "value": "true"
+        },
+        {
+            "description": "s3 config bucket",
+            "name": "S3VOL_CONFIGBUCKET",
+            "value": "s3volconfig"
+        },
+        {
+            "description": "s3fs path",
+            "name": "S3VOL_S3FSPATH",
+            "value": ""
+        }
+    ], 
 	"network": {
 		   "type": "host"
 		   },
