@@ -7,13 +7,26 @@ platform:
   os: linux
   arch: amd64
 
+volumes:
+- name: dockersock
+  temp: {}
+
 services:
-  - docker:dind
+- name: docker
+  image: docker:dind
+  privileged: true
+  volumes:
+  - name: dockersock
+    path: /var/run
 
 steps:
 - name: build plugin
   image: gitlab/dind
+  volumes:
+  - name: dockersock
+    path: /var/run
   script:
+  - sleep 5 # give docker enough time to start
   - docker build -t ${DRONE_REPO}:${DRONE_COMMIT:0:8}-linux-amd64
   - mkdir -p ./plugin/rootfs
   - docker create --name tmp ${DRONE_REPO}:${DRONE_COMMIT:0:8}-linux-amd64
