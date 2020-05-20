@@ -43,9 +43,6 @@
         {
             "description": "s3fs root",
             "name": "S3FS_ROOT",
-            "settable": [
-                "value"
-            ],
             "value": "/mnt"
         },
         {
