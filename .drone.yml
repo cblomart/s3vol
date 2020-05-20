@@ -7,115 +7,16 @@ platform:
   os: linux
   arch: amd64
 
-steps:
-- name: publish
-  image: plugins/docker
-  settings:
-    daemon_off: false
-    repo: ${DRONE_REPO}
-    tags: ${DRONE_COMMIT:0:8}-linux-amd64
-    dockerfile: Dockerfile
-    username:
-      from_secret: DOCKER_USERNAME
-    password:
-      from_secret: DOCKER_PASSWORD
-
----
-kind: pipeline
-type: docker
-name: build-linux-arm64
-
-platform:
-  os: linux
-  arch: arm64
+services:
+  - docker:dind
 
 steps:
-- name: publish
-  image: plugins/docker
-  settings:
-    daemon_off: false
-    repo: ${DRONE_REPO}
-    tags: ${DRONE_COMMIT:0:8}-linux-arm64
-    dockerfile: Dockerfile
-    username:
-      from_secret: DOCKER_USERNAME
-    password:
-      from_secret: DOCKER_PASSWORD
-
----
-kind: pipeline
-type: docker
-name: build-linux-arm
-
-platform:
-  os: linux
-  arch: arm
-
-steps:
-- name: publish
-  image: plugins/docker
-  settings:
-    daemon_off: false
-    repo: ${DRONE_REPO}
-    dockerfile: Dockerfile
-    tags: ${DRONE_COMMIT:0:8}-linux-arm
-    username:
-      from_secret: DOCKER_USERNAME
-    password:
-      from_secret: DOCKER_PASSWORD
-
----
-kind: pipeline
-type: docker
-name: notifications
-
-clone:
-  disable: true
-
-platform:
-  os: linux
-  arch: amd64
-
-steps:
-- name: manifest commit
-  image: plugins/manifest
-  settings:
-    username: 
-      from_secret: DOCKER_USERNAME
-    password: 
-      from_secret: DOCKER_PASSWORD
-    ignore_missing: true
-    target: ${DRONE_REPO}:${DRONE_COMMIT:0:8}
-    template: ${DRONE_REPO}:${DRONE_COMMIT:0:8}-OS-ARCH
-    platforms:
-      - linux/amd64
-      - linux/arm
-      - linux/arm64
-- name: manifest edge
-  image: plugins/manifest
-  settings:
-    username: 
-      from_secret: DOCKER_USERNAME
-    password: 
-      from_secret: DOCKER_PASSWORD
-    ignore_missing: true
-    target: ${DRONE_REPO}:edge
-    template: ${DRONE_REPO}:${DRONE_COMMIT:0:8}-OS-ARCH
-    platforms:
-      - linux/amd64
-      - linux/arm
-      - linux/arm64
-- name: cleanup docker hub
-  image: cblomart/registry-cleanup
-  settings:
-    password:
-      from_secret: DOCKER_PASSWORD
-    regex: "^[0-9A-Fa-f]+-linux-.*?$"
-    min: 3
-    max: 1s
-    verbose: true
-
-depends_on:
-- build-linux-amd64
-- build-linux-arm64
-- build-linux-arm
+- name: build plugin
+  image: gitlab/dind
+  script:
+  - docker build -t ${DRONE_REPO}:${DRONE_COMMIT:0:8}-linux-amd64
+  - mkdir -p ./plugin/rootfs
+  - docker create --name tmp ${DRONE_REPO}:${DRONE_COMMIT:0:8}-linux-amd64
+  - docker export tmp | tar -x -C ./plugin/rootfs
+  - docker rm -vf tmp
+  - docker plugin create ${DRONE_REPO}:${DRONE_COMMIT:0:8}-linux-amd64 ./plugin
