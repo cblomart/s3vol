@@ -18,6 +18,7 @@ before_install:
   - wget https://github.com/multiarch/qemu-user-static/releases/download/v4.2.0-7/qemu-arm-static.tar.gz -O /tmp/qemu-arm-static.tar.gz
   - tar zxvf /tmp/qemu-aarch64-static.tar.gz -C ./
   - tar zxvf /tmp/qemu-arm-static.tar.gz -C ./
+  - upx -qq ./qemu-*-static
 
 install: true
 
