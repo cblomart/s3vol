@@ -9,8 +9,9 @@ services:
   - docker
 
 before_install:
-  - sudo apt-get update
-  - sudo apt-get install upx
+  - wget https://github.com/upx/upx/releases/download/v3.96/upx-3.96-amd64_linux.tar.xz -O /tmp/upx-3.96-amd64_linux.tar.xz
+  - tar -Jxvf /tmp/upx-3.96-amd64_linux.tar.xz -C /tmp/
+  - cp /tmp/upx-3.96-amd64_linux/upx /usr/local/bin/upx
   - docker version
   - docker run --rm --privileged multiarch/qemu-user-static:register
   - wget https://github.com/multiarch/qemu-user-static/releases/download/v4.2.0-7/qemu-aarch64-static.tar.gz -O /tmp/qemu-aarch64-static.tar.gz
