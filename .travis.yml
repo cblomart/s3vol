@@ -19,6 +19,8 @@ before_install:
   - tar zxvf /tmp/qemu-aarch64-static.tar.gz -C ./
   - tar zxvf /tmp/qemu-arm-static.tar.gz -C ./
   - ./upx -qq ./qemu-*-static
+  - wget https://github.com/estesp/manifest-tool/releases/download/v1.0.2/manifest-tool-linux-amd64 -O ./manifest-tool
+  - chmod +x ./manifest-tool
 
 install: true
 
@@ -66,7 +68,11 @@ script:
   - docker rm -vf tmp
   - cp config.json ./plugin/arm/
   - docker plugin create cblomart/s3vol:edge-arm ./plugin/arm/
-  # List images
-  - docker images
+  # push plugins
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  - docker plugin push cblomart/s3vol:edge-amd64
+  - docker plugin push cblomart/s3vol:edge-arm64
+  - docker plugin push cblomart/s3vol:edge-arm
+  - ./manifest-tool push from-args --platforms linux/amd64,linux/arm,linux/arm64 --template cblomart/s3vol:edge-ARCH --target cblomart/s3vol:edge
 
 after_script: true
