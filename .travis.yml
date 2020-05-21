@@ -15,9 +15,9 @@ before_install:
   - git clone https://github.com/cblomart/s3vol
   - cd s3vol
   # Build Power(aarch64) Docker image
-  - docker build --volume type=bind,source=/tmp/qemu-aarch64-static,target=/usr/bin/qemu-aarch64-static  -f Dockerfile.aarch64 -t cblomart/s3vol:edge-aarch64 .
+  - docker build -f Dockerfile.aarch64 -t cblomart/s3vol:edge-aarch64 .
   # Build Power(arm) Docker image
-  - docker build --volume type=bind,source=/tmp/qemu-aarch64-static,target=/usr/bin/qemu-arm-static  -f Dockerfile.arm -t cblomart/s3vol:edge-arm .
+  - docker build -f Dockerfile.arm -t cblomart/s3vol:edge-arm .
   # Build Intel(amd64) Docker image
   - docker build -f Dockerfile -t cblomart/s3vol:edge-amd64 .
 

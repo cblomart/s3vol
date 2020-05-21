@@ -1,5 +1,7 @@
 FROM arm64v8/golang:1.14-alpine3.11 AS builder
 
+COPY /tmp/qemu-aarch64-static /usr/bin
+
 RUN apk add --no-cache gcc musl-dev upx
 
 WORKDIR /app
@@ -11,6 +13,8 @@ RUN go build ./cmd/s3vol.go
 RUN upx -qq s3vol
 
 FROM arm64v8/alpine:3.11
+
+COPY /tmp/qemu-aarch64-static /usr/bin
 
 RUN apk add s3fs-fuse --no-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ --allow-untrusted
 
