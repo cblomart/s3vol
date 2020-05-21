@@ -6,6 +6,8 @@ services:
   - docker
 
 before_install:
+  - sudo apt-get update
+  - sudo apt-get install upx
   - docker version
   - docker run --rm --privileged multiarch/qemu-user-static:register
   - wget https://github.com/multiarch/qemu-user-static/releases/download/v4.2.0-7/qemu-aarch64-static.tar.gz -O /tmp/qemu-aarch64-static.tar.gz
@@ -18,10 +20,21 @@ install: true
 before_script: true
 
 script: 
+  # build for amd64
+  - GOARCH=amd64 go build -o ./s3vol-amd64 ./cmd/...
+  - upx -qq s3vol-amd64
+  # build for aarch64
+  - GOARCH=arm64 go build -o ./s3vol-arm64 ./cmd/...
+  - upx -qq s3vol-arm64
+  # build for arm
+  - GOARCH=arm go build -o ./s3vol-arm ./cmd/...
+  - upx -qq s3vol-arm
   # prepare plugin dirs
   - mkdir -p ./plugin/{amd64,aarch64,arm}/rootfs
   # Build Intel(amd64) Docker image
   - docker build -f Dockerfile -t cblomart/s3vol:edge-amd64-rootfs .
+  # Test docker file
+  - docker run cblomart/s3vol:edge-amd64-rootfs
   # Prepare rootfs for amd64
   - docker create --name tmp cblomart/s3vol:edge-amd64-rootfs
   - docker export tmp | tar -x -C ./plugin/amd64/rootfs
@@ -30,6 +43,8 @@ script:
   - docker plugin create cblomart/s3vol:edge-amd64 ./plugin/amd64/
   # Build Power(aarch64) Docker image
   - docker build -f Dockerfile.aarch64 -t cblomart/s3vol:edge-aarch64-rootfs .
+  # Test docker file
+  - docker run cblomart/s3vol:edge-aarch64-rootfs
   # Prepare rootfs for aarch64
   - docker create --name tmp cblomart/s3vol:edge-aarch64-rootfs
   - docker export tmp | tar -x -C ./plugin/aarch64/rootfs
@@ -38,6 +53,8 @@ script:
   - docker plugin create cblomart/s3vol:edge-aarch64 ./plugin/aarch64/
   # Build Power(arm) Docker image
   - docker build -f Dockerfile.arm -t cblomart/s3vol:edge-arm-rootfs .
+  # Test docker file
+  - docker run cblomart/s3vol:edge-arm-rootfs
   # Prepare rootfs for arm
   - docker create --name tmp cblomart/s3vol:edge-arm-rootfs
   - docker export tmp | tar -x -C ./plugin/arm/rootfs
