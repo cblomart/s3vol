@@ -11,7 +11,7 @@ services:
 before_install:
   - wget https://github.com/upx/upx/releases/download/v3.96/upx-3.96-amd64_linux.tar.xz -O /tmp/upx-3.96-amd64_linux.tar.xz
   - tar -Jxvf /tmp/upx-3.96-amd64_linux.tar.xz -C /tmp/
-  - cp /tmp/upx-3.96-amd64_linux/upx /usr/local/bin/upx
+  - cp /tmp/upx-3.96-amd64_linux/upx ./upx
   - docker version
   - docker run --rm --privileged multiarch/qemu-user-static:register
   - wget https://github.com/multiarch/qemu-user-static/releases/download/v4.2.0-7/qemu-aarch64-static.tar.gz -O /tmp/qemu-aarch64-static.tar.gz
@@ -26,13 +26,13 @@ before_script: true
 script: 
   # build for amd64
   - GOARCH=amd64 go build -o ./s3vol-amd64 ./cmd/...
-  - upx -qq s3vol-amd64
+  - ./upx -qq s3vol-amd64
   # build for aarch64
   - GOARCH=arm64 go build -o ./s3vol-arm64 ./cmd/...
-  - upx -qq s3vol-arm64
+  - ./upx -qq s3vol-arm64
   # build for arm
   - GOARCH=arm go build -o ./s3vol-arm ./cmd/...
-  - upx -qq s3vol-arm
+  - ./upx -qq s3vol-arm
   # prepare plugin dirs
   - mkdir -p ./plugin/{amd64,aarch64,arm}/rootfs
   # Build Intel(amd64) Docker image
