@@ -30,14 +30,14 @@ script:
   # build for amd64
   - CGO_ENABLED=0 GOARCH=amd64 go build -o ./s3vol-amd64 ./cmd/...
   - ./upx -qq s3vol-amd64
-  # build for aarch64
+  # build for arm64
   - CGO_ENABLED=0 GOARCH=arm64 go build -o ./s3vol-arm64 ./cmd/...
   - ./upx -qq s3vol-arm64
   # build for arm
   - CGO_ENABLED=0 GOARCH=arm go build -o ./s3vol-arm ./cmd/...
   - ./upx -qq s3vol-arm
   # prepare plugin dirs
-  - mkdir -p ./plugin/{amd64,aarch64,arm}/rootfs
+  - mkdir -p ./plugin/{amd64,arm64,arm}/rootfs
   # Build Intel(amd64) Docker image
   - docker build -f Dockerfile -t cblomart/s3vol:edge-amd64-rootfs .
   # Test docker file
@@ -48,17 +48,17 @@ script:
   - docker rm -vf tmp
   - cp config.json ./plugin/amd64/
   - docker plugin create cblomart/s3vol:edge-amd64 ./plugin/amd64/
-  # Build Power(aarch64) Docker image
-  - docker build -f Dockerfile.aarch64 -t cblomart/s3vol:edge-aarch64-rootfs .
+  # Build arm64 Docker image
+  - docker build -f Dockerfile.arm64 -t cblomart/s3vol:edge-arm64-rootfs .
   # Test docker file
-  - docker run cblomart/s3vol:edge-aarch64-rootfs
-  # Prepare rootfs for aarch64
-  - docker create --name tmp cblomart/s3vol:edge-aarch64-rootfs
-  - docker export tmp | tar -x -C ./plugin/aarch64/rootfs
+  - docker run cblomart/s3vol:edge-arm64-rootfs
+  # Prepare rootfs for arm64
+  - docker create --name tmp cblomart/s3vol:edge-arm64-rootfs
+  - docker export tmp | tar -x -C ./plugin/arm64/rootfs
   - docker rm -vf tmp
-  - cp config.json ./plugin/aarch64/
-  - docker plugin create cblomart/s3vol:edge-aarch64 ./plugin/aarch64/
-  # Build Power(arm) Docker image
+  - cp config.json ./plugin/arm64/
+  - docker plugin create cblomart/s3vol:edge-arm64 ./plugin/arm64/
+  # Build arm Docker image
   - docker build -f Dockerfile.arm -t cblomart/s3vol:edge-arm-rootfs .
   # Test docker file
   - docker run cblomart/s3vol:edge-arm-rootfs
