@@ -1,0 +1,30 @@
+language: go
+
+sudo: required
+
+services:
+  - docker
+
+before_install:
+  - docker run --rm --privileged multiarch/qemu-user-static:register
+  - wget https://github.com/multiarch/qemu-user-static/releases/download/v4.2.0-7/qemu-aarch64-static.tar.gz -O /tmp/qemu-aarch64-static.tar.gz
+  - wget https://github.com/multiarch/qemu-user-static/releases/download/v4.2.0-7/qemu-arm-static.tar.gz -O /tmp/qemu-arm-static.tar.gz
+  - tar zxvf /tmp/qemu-aarch64-static.tar.gz -C /tmp
+  - tar zxvf /tmp/qemu-aarch64-static.tar.gz -C /tmp
+  - git clone https://github.com/cblomart/s3vol
+  - cd s3vol
+  # Build Power(aarch64) Docker image
+  - docker build -v type=bind,source=/tmp/qemu-aarch64-static,target=/usr/bin/qemu-aarch64-static  -f Dockerfile.aarch64 -t cblomart/s3vol:edge-aarch64 .
+  # Build Power(arm) Docker image
+  - docker build -v type=bind,source=/tmp/qemu-aarch64-static,target=/usr/bin/qemu-arm-static  -f Dockerfile.aarch64 -t cblomart/s3vol:edge-arm .
+  # Build Intel(amd64) Docker image
+  - docker build -f Dockerfile -t cblomart/s3vol:edge-amd64 .
+
+install: true
+
+before_script: true
+
+script: 
+- docker images
+
+after_script: true
