@@ -20,7 +20,7 @@ RUN apk add s3fs-fuse --no-cache --repository http://dl-3.alpinelinux.org/alpine
 
 COPY --from=builder /app/s3vol /usr/local/bin/s3vol
 
-RUN rm -f /usr/bin/qemu-*-static
+#RUN rm -f /usr/bin/qemu-*-static
 
 ENTRYPOINT [ "/usr/local/bin/s3vol" ]
 
