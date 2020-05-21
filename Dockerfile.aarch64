@@ -1,6 +1,6 @@
 FROM arm64v8/golang:1.14-alpine3.11 AS builder
 
-ADD https://github.com/multiarch/qemu-user-static/releases/download/v4.2.0-7/qemu-aarch64-static /usr/bin
+COPY qemu-aarch64-static /usr/bin
 
 RUN apk add --no-cache gcc musl-dev upx
 
@@ -18,7 +18,7 @@ ADD https://github.com/multiarch/qemu-user-static/releases/download/v4.2.0-7/qem
 
 RUN apk add s3fs-fuse --no-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ --allow-untrusted
 
-COPY --from=builder /app/s3vol /usr/local/bin/s3vol
+COPY qemu-aarch64-static /usr/bin
 
 ENTRYPOINT [ "/usr/local/bin/s3vol" ]
 
