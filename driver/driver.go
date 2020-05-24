@@ -393,13 +393,13 @@ func (d *S3fsDriver) Mount(req *volume.MountRequest) (*volume.MountResponse, err
 		case *exec.ExitError:
 			if len(e.Stderr) > 0 {
 				message := strings.ReplaceAll(string(e.Stderr), "\n", "\\n")
-				log.WithField("command", "driver").WithField("method", "umount").Errorf("error executing the umount command: '%s'", message)
-				return nil, fmt.Errorf("error executing the umount command: '%s'", message)
+				log.WithField("command", "driver").WithField("method", "mount").Errorf("error executing the mount command: '%s'", message)
+				return nil, fmt.Errorf("error executing the mount command: '%s'", message)
 			}
-			log.WithField("command", "driver").WithField("method", "umount").Errorf("error executing the mount command: %s", err)
-			return nil, fmt.Errorf("error executing the umount command: %s", err)
+			log.WithField("command", "driver").WithField("method", "mount").Errorf("error executing the mount command: %s", err)
+			return nil, fmt.Errorf("error executing the mount command: %s", err)
 		default:
-			log.WithField("command", "driver").WithField("method", "umount").Errorf("error executing the mount command: %s", err)
+			log.WithField("command", "driver").WithField("method", "mount").Errorf("error executing the mount command: %s", err)
 			return nil, fmt.Errorf("error executing the mount command: %s", err)
 		}
 	}
