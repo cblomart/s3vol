@@ -86,15 +86,13 @@
 		   "socket": "s3vol.sock"
 	},
 	"linux": {
-		"capabilities": ["CAP_SYS_ADMIN"]
+		"capabilities": ["CAP_SYS_ADMIN"],
+        "devices": [
+            {
+              "path": "/dev/fuse"
+            }
+          ]
+        }
     },
-    "Mounts": [
-      {
-        "Source": "/dev",
-        "Destination": "/dev",
-        "Type": "bind",
-        "Options": ["rbind"]
-      }
-    ],
     "PropagatedMount": "/mnt"
 }
