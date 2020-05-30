@@ -88,5 +88,13 @@
 	"linux": {
 		"capabilities": ["CAP_SYS_ADMIN"]
     },
+    "Mounts": [
+      {
+        "Source": "/dev",
+        "Destination": "/dev",
+        "Type": "bind",
+        "Options": ["rbind"]
+      }
+    ],
     "PropagatedMount": "/mnt"
 }
